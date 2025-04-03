@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل الدخول - MGOOD</title>
+    <!-- Firebase SDK -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.19.1/firebase-app-compat.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.19.1/firebase-auth-compat.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.19.1/firebase-firestore-compat.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+            cursor: none; /* إخفاء المؤشر الافتراضي */
+        }
+        
+        /* خلفية متحركة */
+        .animated-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+        
+        .animated-background span {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: rgba(142, 68, 173, 0.2);
+            border-radius: 50%;
+            animation: floatParticle 15s linear infinite;
+        }
+        
+        @keyframes floatParticle {
+            0% {
+                transform: translateY(0) translateX(0) rotate(0deg);
+                opacity: 0;
+                border-radius: 50%;
+            }
+            50% {
+                opacity: 0.8;
+                border-radius: 10%;
+            }
+            100% {
+                transform: translateY(-1000px) translateX(200px) rotate(360deg);
+                opacity: 0;
+                border-radius: 50%;
+            }
+        }
+        
+        /* المؤشر المتحرك */
+        .custom-cursor {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: rgba(142, 68, 173, 0.3);
+            border: 2px solid #8e44ad;
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            transition: width 0.3s, height 0.3s;
+            z-index: 9999;
+            backdrop-filter: blur(2px);
+        }
+        
+        .cursor-dot {
+            position: fixed;
+            width: 5px;
+            height: 5px;
+            background-color: #8e44ad;
+            border-radius: 50%;
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            z-index: 10000;
+            transition: width 0.3s, height 0.3s, background-color 0.3s;
+        }
+        
+        /* زر الصوت */
+        .sound-control {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            width: 40px;
+            height: 40px;
+            background-color: rgba(30, 30, 30, 0.8);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .sound-control:hover {
+            transform: scale(1.1);
+            background-color: rgba(142, 68, 173, 0.8);
+        }
+        
+        .sound-control i {
+            color: white;
+            font-size: 18px;
+        }
+        
+        /* صندوق تسجيل الدخول */
+        .login-container {
+            background-color: rgba(30, 30, 30, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            width: 350px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transform: translateY(20px);
+            opacity: 0;
+            animation: fadeInUp 0.8s forwards;
+        }
+        
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .login-logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .login-logo h1 {
+            color: #8e44ad;
+            font-size: 34px;
+            margin-bottom: 5px;
+            letter-spacing: 2px;
+            position: relative;
+            display: inline-block;
+        }
+        
+        .login-logo h1::after {
+            content: '';
+            position: absolute;
+            width: 30%;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #8e44ad, transparent);
+            bottom: -8px;
+            left: 35%;
+            border-radius: 2px;
+        }
+        
+        .login-logo p {
+            color: #cccccc;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            transform: translateY(0);
+            transition: transform 0.3s ease;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            background-color: rgba(45, 45, 45, 0.7);
+            border: 1px solid #3d3d3d;
+            border-radius: 8px;
+            color: #ffffff;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            caret-color: #8e44ad; /* لون مؤشر الكتابة */
+        }
+        
+        /* تأثير الضوء عند الكتابة */
+        .form-group {
+            position: relative;
+        }
+        
+        .form-group::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: radial-gradient(ellipse at center, rgba(142, 68, 173, 0.6) 0%, rgba(142, 68, 173, 0) 70%);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease;
+            z-index: -1;
+        }
+        
+        .form-group.typing::after {
+            width: 250px;
+            height: 120px;
+            opacity: 0.3;
+            animation: pulseLight 2s infinite;
+        }
+        
+        @keyframes pulseLight {
+            0% { opacity: 0.2; }
+            50% { opacity: 0.4; }
+            100% { opacity: 0.2; }
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #8e44ad;
+            box-shadow: 0 0 0 3px rgba(142, 68, 173, 0.2);
+            transform: translateY(0);
+        }
+        
+        .form-group input:focus + .input-line {
+            transform: scaleX(1);
+        }
+        
+        .input-line {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, #8e44ad, #9b59b6);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+        
+        .login-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #8e44ad, #9b59b6);
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .login-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: all 0.6s;
+        }
+        
+        .login-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(142, 68, 173, 0.4);
+        }
+        
+        .login-btn:hover::before {
+            left: 100%;
+        }
+        
+        .login-btn:active {
+            transform: translateY(0);
+        }
+        
+        .return-link {
+            display: block;
+            text-align: center;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        
+        .return-link a {
+            color: #9b59b6; /* لون متناسق مع التصميم */
+            text-decoration: none;
+            transition: color 0.3s ease, transform 0.3s ease;
+            position: relative;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+        
+        .return-link a::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -2px;
+            left: 0;
+            background-color: #8e44ad;
+            transition: width 0.3s ease;
+        }
+        
+        .return-link a:hover {
+            color: #8e44ad;
+            text-shadow: 0 0 5px rgba(142, 68, 173, 0.5);
+        }
+        
+        .return-link a:hover::after {
+            width: 100%;
+        }
+        
+        .alert {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+            transform: translateY(-10px);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+        
+        .alert.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .error-alert {
+            background-color: rgba(231, 76, 60, 0.2);
+            border: 1px solid rgba(231, 76, 60, 0.5);
+            color: #e74c3c;
+        }
+        
+        .success-alert {
+            background-color: rgba(46, 204, 113, 0.2);
+            border: 1px solid rgba(46, 204, 113, 0.5);
+            color: #2ecc71;
+        }
+        
+        .loader {
+            display: none;
+            text-align: center;
+            margin: 10px 0;
+        }
+        
+        .loader div {
+            width: 10px;
+            height: 10px;
+            background: linear-gradient(135deg, #8e44ad, #9b59b6);
+            border-radius: 50%;
+            display: inline-block;
+            margin: 0 3px;
+            animation: bounce 1.5s infinite ease-in-out both;
+        }
+        
+        .loader div:nth-child(1) { animation-delay: -0.30s; }
+        .loader div:nth-child(2) { animation-delay: -0.15s; }
+        
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1.0); }
+        }
+        
+        /* تأثيرات متقدمة عند النقر */
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.4);
+            transform: scale(0);
+            animation: ripple 0.6s linear;
+            pointer-events: none;
+        }
+        
+        @keyframes ripple {
+            to {
+                transform: scale(2.5);
+                opacity: 0;
+            }
+        }
+        
+        /* منع ظهور مؤشر الكتابة I-beam خارج حقول النص */
+        body, button, a, .sound-control {
+            cursor: none;
+        }
+        
+        /* تخصيص مؤشر الكتابة (caret) وتحديد النص */
+        ::selection {
+            background-color: rgba(142, 68, 173, 0.3);
+            color: white;
+        }
+    </style>
+    <!-- أيقونات Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- مؤشر الماوس المخصص -->
+    <div class="custom-cursor"></div>
+    <div class="cursor-dot"></div>
+    
+    <!-- زر التحكم بالصوت -->
+    <div id="sound-toggle" class="sound-control">
+        <i class="fas fa-volume-up" id="sound-icon"></i>
+    </div>
+    
+    <!-- عنصر الصوت (مخفي) -->
+    <audio id="background-music" loop style="display: none;"></audio>
+    
+    <!-- خلفية متحركة -->
+    <div class="animated-background"></div>
+    
+    <div class="login-container">
+        <div class="login-logo">
+            <h1>MGOOD</h1>
+            <p>لوحة التحكم</p>
+        </div>
+        
+        <div id="error-alert" class="alert error-alert">
+            اسم المستخدم أو كلمة المرور غير صحيحة
+        </div>
+        
+        <div id="success-alert" class="alert success-alert">
+            تم تسجيل الدخول بنجاح، جاري التحويل...
+        </div>
+        
+        <form id="login-form">
+            <div class="form-group">
+                <label for="username">اسم المستخدم</label>
+                <input type="text" id="username" name="username" placeholder="أدخل اسم المستخدم" required>
+                <div class="input-line"></div>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">كلمة المرور</label>
+                <input type="password" id="password" name="password" placeholder="أدخل كلمة المرور" required>
+                <div class="input-line"></div>
+            </div>
+            
+            <button type="submit" class="login-btn">تسجيل الدخول</button>
+            
+            <div class="loader" id="loader">
+                <div></div>
+                <div></div>
+                <div></div>
+            </div>
+            
+            <div class="return-link">
+                <a href="index.html">العودة للموقع</a>
+            </div>
+        </form>
+    </div>
+    <script>
+        // إضافة جزيئات متحركة للخلفية
+        function createAnimatedBackground() {
+            const background = document.querySelector('.animated-background');
+            const particleCount = 15;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('span');
+                const size = Math.random() * 30 + 10;
+                const posX = Math.random() * window.innerWidth;
+                const posY = Math.random() * window.innerHeight;
+                const delay = Math.random() * 5;
+                const duration = Math.random() * 10 + 10;
+                
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                particle.style.left = `${posX}px`;
+                particle.style.bottom = `${posY}px`;
+                particle.style.animationDelay = `${delay}s`;
+                particle.style.animationDuration = `${duration}s`;
+                
+                background.appendChild(particle);
+            }
+        }
+        
+        // تأثير الماوس المخصص
+        function setupCustomCursor() {
+            const cursor = document.querySelector('.custom-cursor');
+            const cursorDot = document.querySelector('.cursor-dot');
+            let mouseX = 0, mouseY = 0;
+            let cursorX = 0, cursorY = 0;
+            
+            // استخدام متابعة سلسة للماوس
+            document.addEventListener('mousemove', (e) => {
+                mouseX = e.clientX;
+                mouseY = e.clientY;
+            });
+            
+            // تحديث موضع المؤشر بشكل سلس
+            function updateCursorPosition() {
+                // استخدام متابعة لينة للإحساس بتأثير أكثر سلاسة
+                const easing = 8;
+                cursorX += (mouseX - cursorX) / easing;
+                cursorY += (mouseY - cursorY) / easing;
+                
+                cursor.style.left = cursorX + 'px';
+                cursor.style.top = cursorY + 'px';
+                cursorDot.style.left = mouseX + 'px';
+                cursorDot.style.top = mouseY + 'px';
+                
+                requestAnimationFrame(updateCursorPosition);
+            }
+            
+            updateCursorPosition();
+            
+            // تكبير المؤشر عند مرور الماوس على العناصر التفاعلية
+            const interactiveElements = document.querySelectorAll('button, a, .sound-control');
+            
+            interactiveElements.forEach(element => {
+                element.addEventListener('mouseenter', () => {
+                    cursor.style.width = '40px';
+                    cursor.style.height = '40px';
+                    cursor.style.mixBlendMode = 'difference';
+                    cursorDot.style.width = '0px';
+                    cursorDot.style.height = '0px';
+                });
+                
+                element.addEventListener('mouseleave', () => {
+                    cursor.style.width = '20px';
+                    cursor.style.height = '20px';
+                    cursor.style.mixBlendMode = 'normal';
+                    cursorDot.style.width = '5px';
+                    cursorDot.style.height = '5px';
+                });
+            });
+            
+            // التعامل الخاص مع حقول الإدخال
+            const inputElements = document.querySelectorAll('input');
+            inputElements.forEach(input => {
+                input.addEventListener('mouseenter', () => {
+                    cursor.style.width = '2px';
+                    cursor.style.height = '20px';
+                    cursor.style.borderRadius = '0';
+                    cursor.style.backgroundColor = '#8e44ad';
+                    cursor.style.mixBlendMode = 'normal';
+                    cursorDot.style.width = '0';
+                    cursorDot.style.height = '0';
+                });
+                
+                input.addEventListener('mouseleave', () => {
+                    cursor.style.width = '20px';
+                    cursor.style.height = '20px';
+                    cursor.style.borderRadius = '50%';
+                    cursor.style.backgroundColor = 'rgba(142, 68, 173, 0.3)';
+                    cursor.style.mixBlendMode = 'normal';
+                    cursorDot.style.width = '5px';
+                    cursorDot.style.height = '5px';
+                });
+            });
+        }
+        
+        // تأثير الريبل عند النقر
+        function setupRippleEffect() {
+            document.addEventListener('click', function(e) {
+                const ripple = document.createElement('div');
+                ripple.className = 'ripple';
+                document.body.appendChild(ripple);
+                
+                const x = e.clientX;
+                const y = e.clientY;
+                
+                ripple.style.left = `${x}px`;
+                ripple.style.top = `${y}px`;
+                
+                setTimeout(() => {
+                    ripple.remove();
+                }, 600);
+            });
+        }
+        
+        // إعداد مشغل الموسيقى
+        function setupMusicPlayer() {
+            const audioElement = document.getElementById('background-music');
+            // استخدام الرابط المباشر للموسيقى (همسات الليل)
+            audioElement.src = "https://your-audio-hosting.com/relaxing_music.mp3"; // استبدل هذا برابط مباشر للصوت
+            
+            // ضبط مستوى الصوت على 30%
+            audioElement.volume = 0.3;
+            
+            // تعديل رابط الموسيقى لموسيقى همسات الليل من يوتيوب
+            // لاحظ: ستحتاج إلى رابط MP3 مباشر، لا يمكن تشغيل فيديو يوتيوب مباشرة
+            
+            const soundToggle = document.getElementById('sound-toggle');
+            const soundIcon = document.getElementById('sound-icon');
+            let isMuted = false;
+            
+            // محاولة تشغيل الموسيقى تلقائيًا
+            document.addEventListener('click', function startMusic() {
+                audioElement.play().then(() => {
+                    console.log("تم تشغيل الموسيقى بنجاح");
+                    document.removeEventListener('click', startMusic);
+                }).catch(error => {
+                    console.log("فشل تشغيل الموسيقى تلقائيًا:", error);
+                });
+            }, { once: true });
+            
+            // زر التحكم بالصوت
+            soundToggle.addEventListener('click', () => {
+                if (isMuted) {
+                    // تشغيل الصوت
+                    audioElement.muted = false;
+                    soundIcon.className = 'fas fa-volume-up';
+                } else {
+                    // كتم الصوت
+                    audioElement.muted = true;
+                    soundIcon.className = 'fas fa-volume-mute';
+                }
+                isMuted = !isMuted;
+            });
+        }
+        
+        // تأثير الضوء عند الكتابة
+        function setupTypingLightEffect() {
+            const formGroups = document.querySelectorAll('.form-group');
+            
+            formGroups.forEach(group => {
+                const input = group.querySelector('input');
+                
+                input.addEventListener('input', () => {
+                    if (input.value.length > 0) {
+                        group.classList.add('typing');
+                    } else {
+                        group.classList.remove('typing');
+                    }
+                });
+                
+                input.addEventListener('focus', () => {
+                    group.classList.add('typing');
+                });
+                
+                input.addEventListener('blur', () => {
+                    if (input.value.length === 0) {
+                        group.classList.remove('typing');
+                    }
+                });
+            });
+        }
+        
+        // Function to show alert
+        function showAlert(alertElement, message, duration = 3000) {
+            alertElement.textContent = message;
+            alertElement.style.display = 'block';
+            // إضافة تأثير التحريك
+            setTimeout(() => {
+                alertElement.classList.add('show');
+            }, 10);
+            
+            setTimeout(() => {
+                alertElement.classList.remove('show');
+                setTimeout(() => {
+                    alertElement.style.display = 'none';
+                }, 300);
+            }, duration);
+        }
+        
+        // تعطيل I-beam cursor وتحسين التفاعل مع النص
+        function setupTextInteraction() {
+            // منع النقر المزدوج لتحديد النص
+            document.addEventListener('mousedown', function(e) {
+                if (e.detail > 1 && e.target.tagName !== 'INPUT') {
+                    e.preventDefault();
+                }
+            });
+            
+            // تحسين تفاعل النماذج
+            const inputs = document.querySelectorAll('input');
+            
+            inputs.forEach(input => {
+                input.addEventListener('focus', function() {
+                    this.parentElement.querySelector('label').style.transform = 'translateY(-5px)';
+                    this.parentElement.querySelector('label').style.color = '#8e44ad';
+                });
+                
+                input.addEventListener('blur', function() {
+                    if (this.value === '') {
+                        this.parentElement.querySelector('label').style.transform = 'translateY(0)';
+                    }
+                    this.parentElement.querySelector('label').style.color = '';
+                });
+                
+                // تلوين الخلفية عند الإدخال
+                input.addEventListener('input', function() {
+                    if (this.value.length > 0) {
+                        this.style.backgroundColor = 'rgba(50, 50, 50, 0.7)';
+                    } else {
+                        this.style.backgroundColor = 'rgba(45, 45, 45, 0.7)';
+                    }
+                });
+            });
+        }
+        
+        // Initialize Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyAK5FpdaYDrSPqHp1A4HkaAfMmuD4wunaA",
+            authDomain: "mgood-ed320.firebaseapp.com",
+            projectId: "mgood-ed320",
+            storageBucket: "mgood-ed320.firebasestorage.app",
+            messagingSenderId: "913421718181",
+            appId: "1:913421718181:web:9e02dc1f445ac55ba0b34c"
+        };
+        
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        
+        // Discord webhook URL for notifications
+        const DISCORD_WEBHOOK_URL = "https://canary.discord.com/api/webhooks/1356575273000243301/K4YHAtFQEs3r-Mxhjq8ctnm6x9URw_fZQ9y-4e5bBG4WhhXapkN1b_kyVaXYSnOWcOIp";
+        
+        // Form elements
+        const loginForm = document.getElementById('login-form');
+        const errorAlert = document.getElementById('error-alert');
+        const successAlert = document.getElementById('success-alert');
+        const loader = document.getElementById('loader');
+        
+        // Function to send notification to Discord
+        async function sendDiscordNotification(username, successful, details = '') {
+            try {
+                const timestamp = new Date().toLocaleString('ar-SA');
+                const ipAddress = await fetch('https://api.ipify.org?format=json')
+                    .then(response => response.json())
+                    .then(data => data.ip);
+                
+                const payload = {
+                    embeds: [{
+                        title: successful ? "✅ تسجيل دخول ناجح" : "❌ محاولة تسجيل دخول فاشلة",
+                        color: successful ? 3066993 : 15158332, // Green or Red
+                        fields: [
+                            {
+                                name: "اسم المستخدم",
+                                value: username,
+                                inline: true
+                            },
+                            {
+                                name: "التاريخ والوقت",
+                                value: timestamp,
+                                inline: true
+                            },
+                            {
+                                name: "عنوان IP",
+                                value: ipAddress || "غير معروف",
+                                inline: true
+                            },
+                            {
+                                name: "تفاصيل",
+                                value: details || "لا توجد تفاصيل إضافية",
+                                inline: false
+                            }
+                        ],
+                        footer: {
+                            text: "MGOOD Security System"
+                        }
+                    }]
+                };
+                
+                // Send to Discord webhook
+                fetch(DISCORD_WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload)
+                });
+            } catch (error) {
+                console.error("Error sending Discord notification:", error);
+            }
+        }
+        
+        // Function to handle login
+        async function handleLogin(username, password) {
+            loader.style.display = 'block';
+            
+            try {
+                // البحث عن الوثيقة باستخدام معرف الوثيقة مباشرة
+                const userDoc = await db.collection('users').doc(username).get();
+                
+                if (!userDoc.exists) {
+                    // No such user
+                    showAlert(errorAlert, 'اسم المستخدم غير موجود');
+                    await sendDiscordNotification(username, false, 'اسم المستخدم غير موجود في قاعدة البيانات');
+                    return;
+                }
+                
+                // User exists, get the data
+                const userData = userDoc.data();
+                
+                // تحقق مما إذا كانت كلمة المرور موجودة
+                if (userData.password === undefined) {
+                    showAlert(errorAlert, 'خطأ في بيانات المستخدم (كلمة المرور غير موجودة)');
+                    await sendDiscordNotification(username, false, 'كلمة المرور غير موجودة في بيانات المستخدم');
+                    return;
+                }
+                
+                // تعديل كود التحقق ليعمل مع اسم المستخدم وكلمة المرور فقط
+                if (userData.password === password) {
+                    // تسجيل الدخول ناجح
+                    showAlert(successAlert, 'تم تسجيل الدخول بنجاح، جاري التحويل...');
+                    
+                    // تسجيل نشاط الدخول
+                    try {
+                        await db.collection('loginActivity').add({
+                            userId: userDoc.id,
+                            username: username,
+                            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                            successful: true
+                        });
+                    } catch (error) {
+                        console.error("Error logging activity:", error);
+                    }
+                    
+                    // إرسال إشعار Discord
+                    await sendDiscordNotification(username, true, 'تم تسجيل الدخول بنجاح');
+                    
+                    // تخزين جلسة المستخدم
+                    const userSession = {
+                        id: userDoc.id,
+                        username: username,
+                        role: userData.role || 'user'
+                    };
+                    localStorage.setItem('mgoodUser', JSON.stringify(userSession));
+                    
+                    // التحويل إلى لوحة التحكم
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 1500);
+                } else {
+                    // كلمة المرور غير صحيحة
+                    showAlert(errorAlert, 'كلمة المرور غير صحيحة');
+                    
+                    // تسجيل محاولة تسجيل دخول فاشلة
+                    try {
+                        await db.collection('loginActivity').add({
+                            username: username,
+                            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                            successful: false,
+                            error: 'كلمة مرور غير صحيحة'
+                        });
+                    } catch (error) {
+                        console.error("Error logging activity:", error);
+                    }
+                    
+                    // إرسال إشعار Discord
+                    await sendDiscordNotification(username, false, 'كلمة المرور غير صحيحة');
+                }
+            } catch (error) {
+                console.error("Login error:", error);
+                showAlert(errorAlert, 'حدث خطأ أثناء تسجيل الدخول');
+                
+                // Send Discord notification
+                await sendDiscordNotification(username, false, `خطأ تقني: ${error.message}`);
+            } finally {
+                loader.style.display = 'none';
+            }
+        }
+        
+        // Form submission handler
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            
+            handleLogin(username, password);
+        });
+        
+        // فحص اتصال قاعدة البيانات
+        async function checkDatabaseConnection() {
+            try {
+                // محاولة اتصال بسيطة لفحص الوصول
+                await db.collection('users').limit(1).get();
+                console.log("تم الاتصال بقاعدة البيانات بنجاح");
+            } catch (error) {
+                console.error("خطأ في الاتصال بقاعدة البيانات:", error);
+                
+                // إظهار رسالة للمستخدم إذا كانت هناك مشكلة في الاتصال
+                if (error.code === 'permission-denied') {
+                    showAlert(errorAlert, 'خطأ في الوصول لقاعدة البيانات. الرجاء التحقق من قواعد الأمان.');
+                }
+            }
+        }
+        
+        // تحسين تجربة المستخدم مع لوحة المفاتيح
+        function setupKeyboardSupport() {
+            document.addEventListener('keydown', function(e) {
+                // تبديل كتم الصوت عند الضغط على M
+                if (e.key === 'm' || e.key === 'M' || e.key === 'ئ') {
+                    document.getElementById('sound-toggle').click();
+                }
+                
+                // التنقل بين حقول الإدخال باستخدام Tab
+                if (e.key === 'Tab') {
+                    const inputs = document.querySelectorAll('input');
+                    const activeElement = document.activeElement;
+                    
+                    if (activeElement === inputs[0] && !e.shiftKey) {
+                        // التنقل للأمام
+                        e.preventDefault();
+                        inputs[1].focus();
+                    } else if (activeElement === inputs[1] && e.shiftKey) {
+                        // التنقل للخلف
+                        e.preventDefault();
+                        inputs[0].focus();
+                    }
+                }
+                
+                // تشغيل زر تسجيل الدخول عند الضغط على Enter
+                if (e.key === 'Enter' && document.activeElement.tagName !== 'BUTTON') {
+                    e.preventDefault();
+                    document.querySelector('.login-btn').click();
+                }
+            });
+        }
+        
+        // تغيير مؤشر الماوس للأجهزة اللوحية والجوال
+        function checkTouchDevice() {
+            if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+                // تعطيل مؤشر الماوس المخصص على الأجهزة اللوحية
+                document.body.style.cursor = 'auto';
+                document.querySelector('.custom-cursor').style.display = 'none';
+                document.querySelector('.cursor-dot').style.display = 'none';
+                
+                // إعادة تفعيل المؤشر الافتراضي للعناصر
+                const elements = document.querySelectorAll('button, a, input, .sound-control');
+                elements.forEach(el => {
+                    el.style.cursor = 'pointer';
+                });
+                
+                // جعل حقول الإدخال تستخدم المؤشر الافتراضي
+                const inputs = document.querySelectorAll('input');
+                inputs.forEach(input => {
+                    input.style.cursor = 'text';
+                });
+            }
+        }
+        
+        // تنفيذ الدوال عند تحميل الصفحة
+        document.addEventListener('DOMContentLoaded', function() {
+            createAnimatedBackground();
+            setupCustomCursor();
+            setupRippleEffect();
+            setupMusicPlayer();
+            setupTypingLightEffect();
+            setupTextInteraction();
+            setupKeyboardSupport();
+            checkTouchDevice();
+            checkDatabaseConnection();
+        });
+    </script>
+</body>
+</html>

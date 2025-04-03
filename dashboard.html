@@ -1,0 +1,1180 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم - MGOOD</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        :root {
+            --primary-color: #8e44ad;
+            --secondary-color: #3498db;
+            --dark-color: #2c3e50;
+            --light-color: #ecf0f1;
+            --accent-color: #e74c3c;
+            --text-color: #ffffff;
+        }
+        
+        body {
+            background-color: #121212;
+            color: var(--text-color);
+            min-height: 100vh;
+        }
+        
+        /* Layout */
+        .dashboard {
+            display: flex;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 250px;
+            background-color: #1e1e1e;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            right: 0;
+            padding: 20px 0;
+            box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .sidebar-logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .sidebar-logo h2 {
+            color: var(--primary-color);
+            font-size: 24px;
+        }
+        
+        .sidebar-logo p {
+            color: #cccccc;
+            font-size: 12px;
+        }
+        
+        .sidebar-menu {
+            list-style: none;
+        }
+        
+        .sidebar-menu li {
+            margin-bottom: 5px;
+        }
+        
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: #cccccc;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        
+        .sidebar-menu a:hover, .sidebar-menu a.active {
+            background-color: #2d2d2d;
+            color: var(--primary-color);
+        }
+        
+        .sidebar-menu i {
+            margin-left: 10px;
+            width: 20px;
+            text-align: center;
+        }
+        
+        .sidebar-footer {
+            position: absolute;
+            bottom: 20px;
+            width: 100%;
+            padding: 0 20px;
+        }
+        
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: #e74c3c;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+        
+        .logout-btn:hover {
+            background-color: rgba(231, 76, 60, 0.1);
+        }
+        
+        .logout-btn i {
+            margin-left: 10px;
+        }
+        
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-right: 250px;
+            padding: 20px;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #2d2d2d;
+        }
+        
+        .page-title {
+            font-size: 24px;
+            font-weight: 600;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+        
+        .user-info span {
+            margin-left: 10px;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+        }
+        
+        /* Dashboard Overview */
+        .dashboard-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .dashboard-card {
+            background-color: #1e1e1e;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .card-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+        }
+        
+        .card-visitors .card-icon {
+            background-color: rgba(142, 68, 173, 0.2);
+            color: var(--primary-color);
+        }
+        
+        .card-products .card-icon {
+            background-color: rgba(52, 152, 219, 0.2);
+            color: var(--secondary-color);
+        }
+        
+        .card-sales .card-icon {
+            background-color: rgba(46, 204, 113, 0.2);
+            color: #2ecc71;
+        }
+        
+        .card-users .card-icon {
+            background-color: rgba(241, 196, 15, 0.2);
+            color: #f1c40f;
+        }
+        
+        .card-value {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .card-label {
+            color: #cccccc;
+            font-size: 14px;
+        }
+        
+        /* Tab Content */
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* Content Sections */
+        .content-section {
+            background-color: #1e1e1e;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #2d2d2d;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .action-btn {
+            padding: 8px 16px;
+            background-color: var(--primary-color);
+            color: var(--text-color);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+        
+        .action-btn i {
+            margin-left: 5px;
+        }
+        
+        /* Products Table */
+        .products-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .products-table th,
+        .products-table td {
+            padding: 12px 15px;
+            text-align: right;
+            border-bottom: 1px solid #2d2d2d;
+        }
+        
+        .products-table th {
+            color: #cccccc;
+            font-weight: 500;
+            text-transform: uppercase;
+            font-size: 12px;
+        }
+        
+        .product-img {
+            width: 40px;
+            height: 40px;
+            border-radius: 5px;
+        }
+        
+        .product-status {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+        
+        .status-active {
+            background-color: rgba(46, 204, 113, 0.2);
+            color: #2ecc71;
+        }
+        
+        .status-pending {
+            background-color: rgba(241, 196, 15, 0.2);
+            color: #f1c40f;
+        }
+        
+        .product-actions {
+            display: flex;
+            justify-content: flex-end;
+        }
+        
+        .table-action {
+            width: 30px;
+            height: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #2d2d2d;
+            border-radius: 5px;
+            margin-right: 5px;
+            color: var(--text-color);
+            text-decoration: none;
+        }
+        
+        .edit-btn:hover {
+            background-color: rgba(52, 152, 219, 0.2);
+            color: var(--secondary-color);
+        }
+        
+        .delete-btn:hover {
+            background-color: rgba(231, 76, 60, 0.2);
+            color: #e74c3c;
+        }
+        
+        /* Form Styles */
+        .form-section {
+            background-color: #1e1e1e;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+            display: none;
+        }
+        
+        .form-section.active {
+            display: block;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 10px 15px;
+            background-color: #2d2d2d;
+            border: 1px solid #3d3d3d;
+            border-radius: 5px;
+            color: var(--text-color);
+            font-size: 14px;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+        
+        textarea.form-control {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        .form-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 14px;
+            cursor: pointer;
+            border: none;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: var(--text-color);
+        }
+        
+        .btn-secondary {
+            background-color: #2d2d2d;
+            color: var(--text-color);
+        }
+        
+        /* File Upload */
+        .file-upload {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            cursor: pointer;
+        }
+        
+        .file-upload-label {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            background-color: #2d2d2d;
+            border-radius: 5px;
+            color: var(--text-color);
+            font-size: 14px;
+        }
+        
+        .file-upload-label i {
+            margin-left: 10px;
+        }
+        
+        .file-upload input[type=file] {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+        
+        /* Media Queries */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 70px;
+                overflow: hidden;
+            }
+            
+            .sidebar-logo, .sidebar-menu span {
+                display: none;
+            }
+            
+            .main-content {
+                margin-right: 70px;
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .dashboard-cards {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-logo">
+                <h2>MGOOD</h2>
+                <p>لوحة التحكم</p>
+            </div>
+            
+            <ul class="sidebar-menu">
+                <li><a href="#" class="active" data-tab="dashboard-tab"><i class="fas fa-home"></i> <span>الرئيسية</span></a></li>
+                <li><a href="#" data-tab="products-tab"><i class="fas fa-box"></i> <span>المنتجات</span></a></li>
+                <li><a href="#" data-tab="social-tab"><i class="fas fa-share-alt"></i> <span>وسائل التواصل</span></a></li>
+                <li><a href="#" data-tab="server-tab"><i class="fas fa-server"></i> <span>السيرفر</span></a></li>
+                <li><a href="#" data-tab="news-tab"><i class="fas fa-newspaper"></i> <span>الأخبار</span></a></li>
+                <li><a href="#" data-tab="rules-tab"><i class="fas fa-scroll"></i> <span>القوانين</span></a></li>
+                <li><a href="#" data-tab="settings-tab"><i class="fas fa-cog"></i> <span>الإعدادات</span></a></li>
+                <li><a href="#" data-tab="users-tab"><i class="fas fa-users"></i> <span>المستخدمين</span></a></li>
+            </ul>
+            
+            <div class="sidebar-footer">
+                <a href="login.html" class="logout-btn"><i class="fas fa-sign-out-alt"></i> <span>تسجيل الخروج</span></a>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="header">
+                <h1 class="page-title">لوحة التحكم</h1>
+                <div class="user-info">
+                    <span>AdminMgood270</span>
+                    <div class="user-avatar">A</div>
+                </div>
+            </div>
+            
+            <!-- Dashboard Tab -->
+            <div class="tab-content active" id="dashboard-tab">
+                <div class="dashboard-cards">
+                    <div class="dashboard-card card-visitors">
+                        <div class="card-header">
+                            <div class="card-icon">
+                                <i class="fas fa-eye"></i>
+                            </div>
+                        </div>
+                        <div class="card-value">1,254</div>
+                        <div class="card-label">زيارات اليوم</div>
+                    </div>
+                    
+                    <div class="dashboard-card card-products">
+                        <div class="card-header">
+                            <div class="card-icon">
+                                <i class="fas fa-box"></i>
+                            </div>
+                        </div>
+                        <div class="card-value">30</div>
+                        <div class="card-label">المنتجات</div>
+                    </div>
+                    
+                    <div class="dashboard-card card-sales">
+                        <div class="card-header">
+                            <div class="card-icon">
+                                <i class="fas fa-shopping-cart"></i>
+                            </div>
+                        </div>
+                        <div class="card-value">145</div>
+                        <div class="card-label">المبيعات</div>
+                    </div>
+                    
+                    <div class="dashboard-card card-users">
+                        <div class="card-header">
+                            <div class="card-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                        </div>
+                        <div class="card-value">45</div>
+                        <div class="card-label">المستخدمين</div>
+                    </div>
+                </div>
+                
+                <div class="content-section">
+                    <div class="section-header">
+                        <h2 class="section-title">آخر المنتجات</h2>
+                        <button class="action-btn" id="go-to-products">
+                            <i class="fas fa-plus"></i> إضافة منتج
+                        </button>
+                    </div>
+                    
+                    <table class="products-table">
+                        <thead>
+                            <tr>
+                                <th>الصورة</th>
+                                <th>المنتج</th>
+                                <th>السعر</th>
+                                <th>الحالة</th>
+                                <th>الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><img src="/api/placeholder/80/80" alt="منتج 1" class="product-img"></td>
+                                <td>منتج 1</td>
+                                <td>50 ريال</td>
+                                <td><span class="product-status status-active">متاح</span></td>
+                                <td>
+                                    <div class="product-actions">
+                                        <a href="#" class="table-action edit-btn"><i class="fas fa-edit"></i></a>
+                                        <a href="#" class="table-action delete-btn"><i class="fas fa-trash"></i></a>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><img src="/api/placeholder/80/80" alt="منتج 2" class="product-img"></td>
+                                <td>منتج 2</td>
+                                <td>75 ريال</td>
+                                <td><span class="product-status status-active">متاح</span></td>
+                                <td>
+                                    <div class="product-actions">
+                                        <a href="#" class="table-action edit-btn"><i class="fas fa-edit"></i></a>
+                                        <a href="#" class="table-action delete-btn"><i class="fas fa-trash"></i></a>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><img src="/api/placeholder/80/80" alt="منتج 3" class="product-img"></td>
+                                <td>منتج 3</td>
+                                <td>120 ريال</td>
+                                <td><span class="product-status status-pending">قيد المراجعة</span></td>
+                                <td>
+                                    <div class="product-actions">
+                                        <a href="#" class="table-action edit-btn"><i class="fas fa-edit"></i></a>
+                                        <a href="#" class="table-action delete-btn"><i class="fas fa-trash"></i></a>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Products Tab -->
+            <div class="tab-content" id="products-tab">
+                <div class="content-section">
+                    <div class="section-header">
+                        <h2 class="section-title">إدارة المنتجات</h2>
+                        <button class="action-btn" id="show-add-product">
+                            <i class="fas fa-plus"></i> إضافة منتج
+                        </button>
+                    </div>
+                    
+                    <table class="products-table">
+                        <thead>
+                            <tr>
+                                <th>الصورة</th>
+                                <th>المنتج</th>
+                                <th>السعر</th>
+                                <th>الحالة</th>
+                                <th>الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><img src="/api/placeholder/80/80" alt="منتج 1" class="product-img"></td>
+                                <td>منتج 1</td>
+                                <td>50 ريال</td>
+                                <td><span class="product-status status-active">متاح</span></td>
+                                <td>
+                                    <div class="product-actions">
+                                        <a href="#" class="table-action edit-btn" data-product-id="1"><i class="fas fa-edit"></i></a>
+                                        <a href="#" class="table-action delete-btn" data-product-id="1"><i class="fas fa-trash"></i></a>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><img src="/api/placeholder/80/80" alt="منتج 2" class="product-img"></td>
+                                <td>منتج 2</td>
+                                <td>75 ريال</td>
+                                <td><span class="product-status status-active">متاح</span></td>
+                                <td>
+                                    <div class="product-actions">
+                                        <a href="#" class="table-action edit-btn" data-product-id="2"><i class="fas fa-edit"></i></a>
+                                        <a href="#" class="table-action delete-btn" data-product-id="2"><i class="fas fa-trash"></i></a>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><img src="/api/placeholder/80/80" alt="منتج 3" class="product-img"></td>
+                                <td>منتج 3</td>
+                                <td>120 ريال</td>
+                                <td><span class="product-status status-pending">قيد المراجعة</span></td>
+                                <td>
+                                    <div class="product-actions">
+                                        <a href="#" class="table-action edit-btn" data-product-id="3"><i class="fas fa-edit"></i></a>
+                                        <a href="#" class="table-action delete-btn" data-product-id="3"><i class="fas fa-trash"></i></a>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Add Product Form -->
+                <div class="form-section" id="add-product-form">
+                    <div class="section-header">
+                        <h2 class="section-title">إضافة منتج جديد</h2>
+                    </div>
+                    
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="product-name">اسم المنتج</label>
+                            <input type="text" id="product-name" class="form-control" placeholder="أدخل اسم المنتج">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="product-price">السعر</label>
+                            <input type="number" id="product-price" class="form-control" placeholder="أدخل سعر المنتج">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="product-status">الحالة</label>
+                            <select id="product-status" class="form-control">
+                                <option value="active">متاح</option>
+                                <option value="pending">قيد المراجعة</option>
+                                <option value="inactive">غير متاح</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="product-link">رابط الشراء</label>
+                            <input type="url" id="product-link" class="form-control" placeholder="أدخل رابط صفحة الشراء">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="product-description">وصف المنتج</label>
+                            <textarea id="product-description" class="form-control" rows="4" placeholder="أدخل وصف المنتج"></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>صورة المنتج</label>
+                            <div class="file-upload">
+                                <label class="file-upload-label">
+                                    <i class="fas fa-upload"></i> اختر صورة
+                                </label>
+                                <input type="file" id="product-image" accept="image/*">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-buttons">
+                        <button type="button" class="btn btn-secondary" id="cancel-add-product">إلغاء</button>
+                        <button type="button" class="btn btn-primary" id="save-product">حفظ المنتج</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Social Media Tab -->
+            <div class="tab-content" id="social-tab">
+                <div class="content-section">
+                    <div class="section-header">
+                        <h2 class="section-title">إدارة وسائل التواصل الاجتماعي</h2>
+                    </div>
+                    
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="snapchat-link">رابط سناب شات</label>
+                            <input type="url" id="snapchat-link" class="form-control" value="https://snapchat.com/t/odW4NxEX">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="tiktok-link">رابط تيك توك</label>
+                            <input type="url" id="tiktok-link" class="form-control" value="https://www.tiktok.com/@mmmgw?_t=ZS-8vAioyxjkKy&_r=1">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="discord-link">رابط ديسكورد</label>
+                            <input type="url" id="discord-link" class="form-control" value="https://discord.gg/TCdMwQeU7h">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="instagram-link">رابط انستغرام</label>
+                            <input type="url" id="instagram-link" class="form-control" value="https://www.instagram.com/c4ta?igsh=MWlhcnpuMnR0OWEwcA%3D%3D&utm_source=qr">
+                        </div>
+                    </div>
+                    
+                    <div class="form-buttons">
+                        <button type="button" class="btn btn-primary" id="save-social">حفظ التغييرات</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Server Tab -->
+            <div class="tab-content" id="server-tab">
+                <div class="content-section">
+                    <div class="section-header">
+                        <h2 class="section-title">إعدادات السيرفر</h2>
+                    </div>
+                    
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="server-name">اسم السيرفر</label>
+                            <input type="text" id="server-name" class="form-control" value="MGOOD FIVEM">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="server-desc">وصف السيرفر</label>
+                            <textarea id="server-desc" class="form-control" rows="4">انضم إلى سيرفر MGOOD FIVEM للحصول على تجربة لعب مميزة وفريدة مع مجتمع رائع من اللاعبين.</textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="server-link">رابط السيرفر</label>
+                            <input type="url" id="server-link" class="form-control" value="https://discord.gg/TCdMwQeU7h">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>شعار السيرفر</label>
+                            <div class="file-upload">
+                                <label class="file-upload-label">
+                                    <i class="fas fa-upload"></i> اختر صورة
+                                </label>
+                                <input type="file" id="server-logo" accept="image/*">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-buttons">
+                        <button type="button" class="btn btn-primary" id="save-server">حفظ التغييرات</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- News Tab -->
+            <div class="tab-content" id="news-tab">
+                <div class="content-section">
+                    <div class="section-header">
+                        <h2 class="section-title">إدارة الأخبار</h2>
+                        <button class="action-btn" id="show-add-news">
+                            <i class="fas fa-plus"></i> إضافة خبر
+                        </button>
+                    </div>
+                    
+                    <table class="products-table">
+                        <thead>
+                            <tr>
+                                <th>الصورة</th>
+                                <th>العنوان</th>
+                                <th>التاريخ</th>
+                                <th>الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><img src="/api/placeholder/80/80" alt="خبر 1" class="product-img"></td>
+                                <td>تحديث جديد للسيرفر</td>
+                                <td>3 أبريل، 2025</td>
+                                <td>
+                                    <div class="product-actions">
+                                        <a href="#" class="table-action edit-btn"><i class="fas fa-edit"></i></a>
+                                        <a href="#" class="table-action delete-btn"><i class="fas fa-trash"></i></a>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><img src="/api/placeholder/80/80" alt="خبر 2" class="product-img"></td>
+                                <td>فعالية خاصة هذا الأسبوع</td>
+                                <td>1 أبريل، 2025</td>
+                                <td>
+                                    <div class="product-actions">
+                                        <a href="#" class="table-action edit-btn"><i class="fas fa-edit"></i></a>
+                                        <a href="#" class="table-action delete-btn"><i class="fas fa-trash"></i></a>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><img src="/api/placeholder/80/80" alt="خبر 3" class="product-img"></td>
+                                <td>منتجات جديدة في المتجر</td>
+                                <td>28 مارس، 2025</td>
+                                <td>
+                                    <div class="product-actions">
+                                        <a href="#" class="table-action edit-btn"><i class="fas fa-edit"></i></a>
+                                        <a href="#" class="table-action delete-btn"><i class="fas fa-trash"></i></a>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Add News Form -->
+                <div class="form-section" id="add-news-form">
+                    <div class="section-header">
+                        <h2 class="section-title">إضافة خبر جديد</h2>
+                    </div>
+                    
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="news-title">عنوان الخبر</label>
+                            <input type="text" id="news-title" class="form-control" placeholder="أدخل عنوان الخبر">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="news-date">تاريخ الخبر</label>
+                            <input type="date" id="news-date" class="form-control">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="news-content">محتوى الخبر</label>
+                            <textarea id="news-content" class="form-control" rows="6" placeholder="أدخل محتوى الخبر"></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>صورة الخبر</label>
+                            <div class="file-upload">
+                                <label class="file-upload-label">
+                                    <i class="fas fa-upload"></i> اختر صورة
+                                </label>
+                                <input type="file" id="news-image" accept="image/*">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-buttons">
+                        <button type="button" class="btn btn-secondary" id="cancel-add-news">إلغاء</button>
+                        <button type="button" class="btn btn-primary" id="save-news">حفظ الخبر</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Rules Tab -->
+            <div class="tab-content" id="rules-tab">
+                <div class="content-section">
+                    <div class="section-header">
+                        <h2 class="section-title">إدارة القوانين</h2>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="rules-content">قوانين السيرفر</label>
+                        <textarea id="rules-content" class="form-control" rows="15">يجب على جميع اللاعبين الالتزام بالاحترام المتبادل وعدم استخدام ألفاظ غير لائقة.
+يمنع استخدام أي برامج غير مصرح بها أو أي نوع من أنواع الغش.
+احترام قرارات الإدارة والمشرفين في السيرفر.
+يمنع نشر أي محتوى غير لائق أو مخالف للقوانين العامة.
+يجب الالتزام بقواعد اللعب الأساسية والتفاعل بشكل إيجابي مع اللاعبين الآخرين.
+احترام خصوصية اللاعبين الآخرين وعدم مشاركة معلوماتهم الشخصية.
+عدم استغلال أي ثغرات في السيرفر ويجب الإبلاغ عنها فورًا للإدارة.
+أي مخالفة للقوانين قد تؤدي إلى اتخاذ إجراءات تأديبية تصل إلى الحظر النهائي من السيرفر.</textarea>
+                    </div>
+                    
+                    <div class="form-buttons">
+                        <button type="button" class="btn btn-primary" id="save-rules">حفظ التغييرات</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Settings Tab -->
+            <div class="tab-content" id="settings-tab">
+                <div class="content-section">
+                    <div class="section-header">
+                        <h2 class="section-title">إعدادات الموقع</h2>
+                    </div>
+                    
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="site-title">عنوان الموقع</label>
+                            <input type="text" id="site-title" class="form-control" value="MGOOD - الموقع الرسمي">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="site-description">وصف الموقع</label>
+                            <input type="text" id="site-description" class="form-control" value="الموقع الرسمي لـ MGOOD، المكان المثالي للتواصل والتسوق والانضمام إلى مجتمعنا">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="primary-color">اللون الرئيسي</label>
+                            <input type="color" id="primary-color" class="form-control" value="#8e44ad">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="secondary-color">اللون الثانوي</label>
+                            <input type="color" id="secondary-color" class="form-control" value="#3498db">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>صورة خلفية الصفحة الرئيسية</label>
+                            <div class="file-upload">
+                                <label class="file-upload-label">
+                                    <i class="fas fa-upload"></i> اختر صورة
+                                </label>
+                                <input type="file" id="hero-image" accept="image/*">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="footer-text">نص حقوق الملكية</label>
+                            <input type="text" id="footer-text" class="form-control" value="© 2025 MGOOD. جميع الحقوق محفوظة.">
+                        </div>
+                    </div>
+                    
+                    <div class="form-buttons">
+                        <button type="button" class="btn btn-primary" id="save-settings">حفظ الإعدادات</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Users Tab -->
+            <div class="tab-content" id="users-tab">
+                <div class="content-section">
+                    <div class="section-header">
+                        <h2 class="section-title">إدارة المستخدمين</h2>
+                        <button class="action-btn" id="show-add-user">
+                            <i class="fas fa-plus"></i> إضافة مستخدم
+                        </button>
+                    </div>
+                    
+                    <table class="products-table">
+                        <thead>
+                            <tr>
+                                <th>المستخدم</th>
+                                <th>اسم المستخدم</th>
+                                <th>البريد الإلكتروني</th>
+                                <th>الصلاحيات</th>
+                                <th>الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <div class="user-avatar">A</div>
+                                </td>
+                                <td>AdminMgood270</td>
+                                <td>admin@mgood.com</td>
+                                <td>مدير</td>
+                                <td>
+                                    <div class="product-actions">
+                                        <a href="#" class="table-action edit-btn"><i class="fas fa-edit"></i></a>
+                                        <a href="#" class="table-action delete-btn"><i class="fas fa-trash"></i></a>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="user-avatar">M</div>
+                                </td>
+                                <td>ModeratorUser</td>
+                                <td>mod@mgood.com</td>
+                                <td>مشرف</td>
+                                <td>
+                                    <div class="product-actions">
+                                        <a href="#" class="table-action edit-btn"><i class="fas fa-edit"></i></a>
+                                        <a href="#" class="table-action delete-btn"><i class="fas fa-trash"></i></a>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Add User Form -->
+                <div class="form-section" id="add-user-form">
+                    <div class="section-header">
+                        <h2 class="section-title">إضافة مستخدم جديد</h2>
+                    </div>
+                    
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="user-name">الاسم الكامل</label>
+                            <input type="text" id="user-name" class="form-control" placeholder="أدخل الاسم الكامل">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="user-username">اسم المستخدم</label>
+                            <input type="text" id="user-username" class="form-control" placeholder="أدخل اسم المستخدم">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="user-email">البريد الإلكتروني</label>
+                            <input type="email" id="user-email" class="form-control" placeholder="أدخل البريد الإلكتروني">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="user-password">كلمة المرور</label>
+                            <input type="password" id="user-password" class="form-control" placeholder="أدخل كلمة المرور">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="user-role">الصلاحيات</label>
+                            <select id="user-role" class="form-control">
+                                <option value="admin">مدير</option>
+                                <option value="moderator">مشرف</option>
+                                <option value="editor">محرر</option>
+                                <option value="user">مستخدم عادي</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-buttons">
+                        <button type="button" class="btn btn-secondary" id="cancel-add-user">إلغاء</button>
+                        <button type="button" class="btn btn-primary" id="save-user">حفظ المستخدم</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab Switching
+        const tabLinks = document.querySelectorAll('.sidebar-menu a');
+        const tabContents = document.querySelectorAll('.tab-content');
+        
+        tabLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Remove active class from all links and tabs
+                tabLinks.forEach(item => item.classList.remove('active'));
+                tabContents.forEach(item => item.classList.remove('active'));
+                
+                // Add active class to clicked link
+                this.classList.add('active');
+                
+                // Show corresponding tab content
+                const tabId = this.getAttribute('data-tab');
+                document.getElementById(tabId).classList.add('active');
+            });
+        });
+        
+        // Dashboard to Products Tab
+        document.getElementById('go-to-products').addEventListener('click', function() {
+            tabLinks.forEach(item => item.classList.remove('active'));
+            tabContents.forEach(item => item.classList.remove('active'));
+            
+            // Activate products tab
+            document.querySelector('[data-tab="products-tab"]').classList.add('active');
+            document.getElementById('products-tab').classList.add('active');
+            
+            // Show add product form
+            document.getElementById('add-product-form').style.display = 'block';
+        });
+        
+        // Show/Hide Add Product Form
+        document.getElementById('show-add-product').addEventListener('click', function() {
+            document.getElementById('add-product-form').style.display = 'block';
+        });
+        
+        document.getElementById('cancel-add-product').addEventListener('click', function() {
+            document.getElementById('add-product-form').style.display = 'none';
+        });
+        
+        // Save Product
+        document.getElementById('save-product').addEventListener('click', function() {
+            alert('تم حفظ المنتج بنجاح!');
+            document.getElementById('add-product-form').style.display = 'none';
+        });
+        
+        // Show/Hide Add News Form
+        document.getElementById('show-add-news').addEventListener('click', function() {
+            document.getElementById('add-news-form').style.display = 'block';
+        });
+        
+        document.getElementById('cancel-add-news').addEventListener('click', function() {
+            document.getElementById('add-news-form').style.display = 'none';
+        });
+        
+        // Save News
+        document.getElementById('save-news').addEventListener('click', function() {
+            alert('تم حفظ الخبر بنجاح!');
+            document.getElementById('add-news-form').style.display = 'none';
+        });
+        
+        // Show/Hide Add User Form
+        document.getElementById('show-add-user').addEventListener('click', function() {
+            document.getElementById('add-user-form').style.display = 'block';
+        });
+        
+        document.getElementById('cancel-add-user').addEventListener('click', function() {
+            document.getElementById('add-user-form').style.display = 'none';
+        });
+        
+        // Save User
+        document.getElementById('save-user').addEventListener('click', function() {
+            alert('تم حفظ المستخدم بنجاح!');
+            document.getElementById('add-user-form').style.display = 'none';
+        });
+        
+        // Save Forms
+        document.getElementById('save-social').addEventListener('click', function() {
+            alert('تم حفظ بيانات وسائل التواصل الاجتماعي بنجاح!');
+        });
+        
+        document.getElementById('save-server').addEventListener('click', function() {
+            alert('تم حفظ إعدادات السيرفر بنجاح!');
+        });
+        
+        document.getElementById('save-rules').addEventListener('click', function() {
+            alert('تم حفظ القوانين بنجاح!');
+        });
+        
+        document.getElementById('save-settings').addEventListener('click', function() {
+            alert('تم حفظ إعدادات الموقع بنجاح!');
+        });
+        
+        // Delete Confirmation
+        const deleteButtons = document.querySelectorAll('.delete-btn');
+        
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                if (confirm('هل أنت متأكد من رغبتك في حذف هذا العنصر؟')) {
+                    alert('تم الحذف بنجاح!');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
